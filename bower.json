@@ -1,0 +1,14 @@
+{
+  "name": "crypto-automat",
+  "main": "app/main.js",
+  "authors": [
+    "Slavik Manukyan <slavikmanukyan@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "dependencies": {
+    "font-awesome": "^4.6.2",
+    "photon": "^0.1.2-alpha"
+  }
+}
