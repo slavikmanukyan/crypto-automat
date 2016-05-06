@@ -1,37 +1,36 @@
 import {bootstrap} from 'angular2/platform/browser';
-import {Component} from 'angular2/core';
-import {NgFor} from 'angular2/common';
+import {Component, provide} from 'angular2/core';
+import {RouteConfig, ROUTER_PROVIDERS, APP_BASE_HREF, LocationStrategy, HashLocationStrategy} from 'angular2/router';
+
+import Header from './components/header';
+import NavBar from './components/navbar';
+import MainArea from './components/main-area';
+
+import Crypter from './components/crypter';
+import Welcome from './components/welcome';
 
 @Component({
     selector: 'app',
+    directives: [Header, NavBar, MainArea],
     template: `
     <div class="window">
-      <header class="toolbar toolbar-header" style="-webkit-app-region: drag">
-        <div class="btn-group pull-right">
-          <button class="btn btn-mini btn-default">
-            <i class="fa fa-chevron-down" aria-hidden="true"></i>
-          </button>
-          <button class="btn btn-mini btn-primary">
-            <i class="fa fa-expand" aria-hidden="true"></i>
-          </button>
-          <button class="btn btn-mini btn-negative">
-            <i class="fa fa-times" aria-hidden="true"></i>
-          </button>
-        </div>
-        <h1 class="title" style="font-size: 14px; margin-top: 3px;">Crypto automat</h1>
-      </header>
+      <app-header></app-header>
       <div class="window-content">
         <div class="pane-group">
-          <div class="pane-sm sidebar">...</div>
-          <div class="pane">...</div>
+          <div class="pane-sm sidebar">
+               <nav-bar></nav-bar>
+          </div>
+             <main-area></main-area>
         </div>
       </div>
-      <footer class="toolbar toolbar-footer">
-        <h1 class="title">Footer</h1>
-      </footer>
     </div>
   `
 })
+
+@RouteConfig([
+    { path: '/welcome', component: Welcome, name: 'Welcome', useAsDefault: true },
+    { path: '/crypt', component: Crypter,  name: 'Crypter' }
+])
 
 export class App {
 
@@ -39,4 +38,8 @@ export class App {
 
 }
 
-bootstrap(App);
+bootstrap(App, [
+    ROUTER_PROVIDERS,
+    provide(APP_BASE_HREF, { useValue: '/' }),
+    provide(LocationStrategy, { useClass: HashLocationStrategy })
+]);

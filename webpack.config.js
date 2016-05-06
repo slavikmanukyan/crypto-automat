@@ -38,6 +38,18 @@ module.exports = {
       }
     ]
   },
+  externals: [
+    (function () {
+      var IGNORES = [
+        'electron'
+      ];
+      return function (context, request, callback) {
+        if (IGNORES.indexOf(request) >= 0) {
+          return callback(null, "require('" + request + "')");
+        }
+        return callback();
+      };
+    })()],
 
   plugins: [
     new CommonsChunkPlugin({ name: 'angular2', filename: 'angular2.js', minChunks: Infinity }),
