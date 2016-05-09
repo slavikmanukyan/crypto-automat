@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Matrixes</title>
+    <link rel="stylesheet" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../common/photon/dist/css/photon.css">
+    <script>
+        window.$ = window.jQuery = require('jquery');
+    </script>
+    <script src="../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+</head>
+<body>
+<script>
+    const ipcRender = require('electron').ipcRenderer;
+
+    ipcRender.on('show-keys', showKeys);
+    ipcRender.on('clear', clear);
+
+    function clear() {
+        $('#firstkey').html(' ');
+        $('#seckey').html(' ');
+    }
+
+    function showKeys(e, keys) {
+        $('#firstkey').html(keys.symbols);
+        $('#seckey').html(keys.states);
+    }
+
+</script>
+<div id="keys" class="container-fluid window" style="margin-top: 5px;">
+    <ul class="nav nav-pills" id="#keyTabs">
+        <li role="presentation" class="active"><a href="#first"  data-toggle="tab" aria-controls="first">First Matrix</a></li>
+        <li role="presentation"><a href="#second" data-toggle="tab" aria-controls="second">Second Matrix</a></li>
+    </ul>
+    <div class="tab-content window-content" style="margin-top: 5px;">
+        <div role="tabpanel" class="tab-pane active" id="first">
+            <div id="firstkey" class="">
+
+            </div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="second">
+            <div id="seckey" class="">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -26,6 +26,12 @@ import Welcome from './welcome';
         nav .nav-group-item  {
             padding-left: 15px;
         }
+        nav {
+         width: 170px;
+        }
+
+        .router-link-active
+        { background-color: #6bc; }
         `
     ],
     template: `
@@ -42,7 +48,7 @@ import Welcome from './welcome';
             <span class="icon icon-signal"></span>
             Connect
           </a>
-          <a class="nav-group-item">
+          <a class="nav-group-item" [routerLink]="['About']">
             <span class="icon icon-info"></span>
             About
           </a>

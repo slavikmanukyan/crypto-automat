@@ -5,16 +5,21 @@ const remote = electron.remote;
 
 @Component({
     selector: 'app-header',
+    styles:[`
+        button:hover {
+            cursor: default !important;
+        }
+    `],
     template: `
      <header class="toolbar toolbar-header" style="-webkit-app-region: drag">
         <div class="btn-group pull-right" style="padding: 5px;">
-          <button class="btn btn-mini btn-default" (click)="minimize()">
+          <button class="btn btn-xs btn-warning" (click)="minimize()">
             <i class="fa fa-chevron-down" aria-hidden="true"></i>
           </button>
-          <button class="btn btn-mini btn-primary" (click)="maximize()">
+          <button class="btn btn-xs btn-primary" (click)="maximize()">
             <i class="fa fa-expand" aria-hidden="true"></i>
           </button>
-          <button class="btn btn-mini btn-negative" (click)="close()">
+          <button class="btn btn-xs btn-danger" (click)="close()">
             <i class="fa fa-times" aria-hidden="true"></i>
           </button>
         </div>

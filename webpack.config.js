@@ -41,7 +41,7 @@ module.exports = {
   externals: [
     (function () {
       var IGNORES = [
-        'electron'
+        'electron', 'fs', 'zlib', 'module'
       ];
       return function (context, request, callback) {
         if (IGNORES.indexOf(request) >= 0) {
