@@ -1,4 +1,5 @@
 var app = require('app');
+const os = require('os');
 
 // browser-window creates a native window
 var BrowserWindow = require('browser-window');
@@ -50,7 +51,7 @@ app.on('ready', function () {
 
     keyWindow.on('closed', () => {
         keyWindow = null;
-    })
+    });
 
     keyWindow.setMenu(null);
     keyWindow.loadURL('file://' + __dirname + '/templates/matrix-view.html');
@@ -62,7 +63,21 @@ app.on('ready', function () {
         e.preventDefault();
         e.returnValue = false;
         return false;
-    })
+    });
+
+    ipcMain.on('get-ip', () => {
+        const interfaces = os.networkInterfaces();
+        let addresses = [];
+        for (let k in interfaces) {
+            for (let k2 in interfaces[k]) {
+                var address = interfaces[k][k2];
+                if (address.family === 'IPv4' && !address.internal) {
+                    addresses.push(address.address);
+                }
+            }
+        }
+        mainWindow.send('get-ip',addresses[0]);
+    });
 
     ipcMain.on('show-keys', (e, keys) => {
         keyWindow.webContents.send('show-keys', {
@@ -80,4 +95,4 @@ app.on('before-quit', () => {
         keyWindow.removeAllListeners('close');
         keyWindow.close();
     }
-})
+});
