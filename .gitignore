@@ -1,4 +1,5 @@
 .idea
+/crypto-automat-linux-x64
 node_modules
 common
 build
