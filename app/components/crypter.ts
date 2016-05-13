@@ -9,6 +9,7 @@ import Config from '../lib/config';
 import { Loading } from './loading';
 import {OnInit} from "angular2/core";
 import {base64Symbols, getFileClass} from "../lib/helpers";
+import SaveDialogOptions = Electron.Dialog.SaveDialogOptions;
 const denodefiy = require('promise-denodeify');
 
 const { remote, clipboard } = require('electron');
@@ -168,12 +169,14 @@ export default class Crypter implements OnInit{
      }
 
     saveFile() {
-        dialog.showSaveDialog(
-            {
-                filters: [this.resultFile.decrypted ? { name: `${this.resultFile.ext} file`, extensions: [this.resultFile.ext] }
-                    : { name: 'All files', extensions: ['*'] }],
-                title: 'Save result',
-            },
+        let options:SaveDialogOptions = {
+            filters: [this.resultFile.decrypted ? { name: `${this.resultFile.ext} file`, extensions: [this.resultFile.ext] }
+                : { name: 'All files', extensions: ['*'] }],
+            title: 'Save result',
+        };
+        dialog.showSaveDialog(null,
+            options
+            ,
             (file) => {
                 if (file === undefined) return;
                 let prom;
@@ -227,7 +230,7 @@ export default class Crypter implements OnInit{
     }
 
     saveInFile() {
-        dialog.showSaveDialog(
+        dialog.showSaveDialog(null,
             {
                 filters: [{ name: 'All', extensions: ['*']}],
                 title: 'Save result',
@@ -314,7 +317,7 @@ export default class Crypter implements OnInit{
     }
     saveKeys() {
         if (!this.checkKeys()) return;
-        dialog.showSaveDialog(
+        dialog.showSaveDialog(null,
             {
                 filters: [{ name: 'Crypto keys', extensions: ['ckey']}],
                 title: 'Save keys',

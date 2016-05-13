@@ -1,5 +1,4 @@
-/// <references path="typings/main/ambient/es6-shim/index.d.ts" />
-/// <references path="typings/main/ambient/node/index.d.ts" />
+/// <reference path="../typings/main.d.ts" />
 
 import {bootstrap} from 'angular2/platform/browser';
 import {Component, provide} from 'angular2/core';
@@ -12,10 +11,10 @@ import MainArea from './components/main-area';
 import Crypter from './components/crypter';
 import Welcome from './components/welcome';
 import About from './components/about';
+import Communcation from "./components/communication";
 
 @Component({
     selector: 'app',
-    directives: [Header, NavBar, MainArea],
     template: `
     <div class="window">
       <app-header></app-header>
@@ -28,13 +27,15 @@ import About from './components/about';
         </div>
       </div>
     </div>
-  `
+  `,
+   directives: [Header, NavBar, MainArea]
 })
 
 @RouteConfig([
     { path: '/welcome', component: Welcome, name: 'Welcome', useAsDefault: true },
     { path: '/crypt', component: Crypter,  name: 'Crypter' },
-    { path: '/about', component: About, name: 'About'}
+    { path: '/about', component: About, name: 'About'},
+    { path: '/communication', component: Communcation, name: 'Communication'}
 ])
 
 export class App {

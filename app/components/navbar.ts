@@ -44,7 +44,7 @@ import Welcome from './welcome';
             <span class="icon icon-lock"></span>
             Encrypt/Decrypt
           </a>
-          <a class="nav-group-item">
+          <a class="nav-group-item" [routerLink]="['Communication']">
             <span class="icon icon-signal"></span>
             Connect
           </a>
