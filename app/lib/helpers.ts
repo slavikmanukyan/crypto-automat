@@ -35,7 +35,7 @@ const faFileMapping = {
     'application/gzip': 'archive-o',
     'application/zip': 'archive-o',
     'application/octet-stream': 'o'
-}
+};
 
 export function getFileClass({ mime }) {
     return 'fa-file-' + (faFileMapping[mime] || faFileMapping[mime.split('/')[0]] || 'o');

@@ -16,6 +16,8 @@ export class KeyGenerator {
     public isKeysAvailable:Boolean;
     public stateCount:number;
 
+    private engine;
+
     public setKeys(keys) {
         this.symbols = keys.symbols;
         this.states = keys.states;
@@ -30,19 +32,22 @@ export class KeyGenerator {
         this.isKeysAvailable = false;
     }
 
-    generateKeys(states:number) {
+    generateKeys(states:number, engine?:Array<number>) {
         if (states < 65) throw new Error('State must be gte 65');
         this.stateCount = states;
         this.symbols = new SymbolMatrix(65, states);
         this.revSymbols = new SymbolMatrix(65, states);
         this.symbols.setRows(base64Symbols);
-        let sr = new Random(Random.engines.browserCrypto);
+
+        if (!engine) this.engine = Random.engines.browserCrypto;
+        else this.engine = Random.engines.mt19937().seedWithArray(engine);
+        let sr = new Random(this.engine);
         for (let i = 0; i < states; i++) {
             let newColumn = [...base64Symbols.split('')];
             sr.shuffle(newColumn);
             this.symbols.insertColumn(newColumn);
         }
-        let str = new Random(Random.engines.browserCrypto);
+        let str = new Random(this.engine);
         this.states = new StateMatrix(65, states);
         this.revStates = new StateMatrix(65, states);
         this.states.setRows(base64Symbols);

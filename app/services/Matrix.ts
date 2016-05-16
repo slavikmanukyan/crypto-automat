@@ -27,8 +27,8 @@ export  class Matrix<T> {
         })
     }
     constructor(public rowsCount:number, public columnsCount:number) {
-        this.rows = new Array<string>();
-        this.columns = new Array<Array<T>>();
+        this.rows = Array<string>();
+        this.columns = Array<Array<T>>();
         this.table = new Map<string, Array<T>>();
     }
     insertColumn(col:Array<T>):Matrix<T> {
@@ -63,7 +63,6 @@ export  class Matrix<T> {
                 columns[i].push(row[1][i]);
             }
         }
-        console.log(columns)
         for (let col of columns) {
             matrix.insertColumn(col);
         }
