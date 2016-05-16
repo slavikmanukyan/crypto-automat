@@ -1,12 +1,21 @@
-import {Component, OnInit} from 'angular2/core';
+import {Component, OnInit, OnDestroy, ViewChild, ElementRef} from 'angular2/core';
 import {NgZone} from "angular2/core";
+import {Cipher} from "../services/Crypto";
+import {connect} from "net";
 
 const ipcRenderer = require('electron').ipcRenderer;
+declare var jQuery;
 
 @Component({
     selector: 'communication',
     styles: [
         `
+            #send {
+                resize: vertical;
+                min-height: 100px;
+                max-height: 150px;
+                width: 50%
+            }
             .msg {
                 padding: 5px;
                 border: 1px solid #eeeeee;
@@ -38,41 +47,47 @@ const ipcRenderer = require('electron').ipcRenderer;
                         <p class="text-muted">Connected to: <b>{{connected}}</b></p>
                     </div>
               </div>
-                <form [hidden]="connected || listening" class="form-inline" (sumbit)="connect()">
+                <form  [hidden]="connected || listening" class="form-inline" (submit)="connect()">
                     <div class="form-group">
                         <label style="margin-bottom: -5px;">IP to connect: </label>
-                        <input  [ngModel]="remote">
+                        <input [(ngModel)]="remote">
                     </div>
                     <button type="submit" class="btn btn-primary">Connect</button>
                 </form>
-              <form [hidden]="!connected" (submit)="send()">
-                   <div class="form-group">
-                        <div>
-                          <textarea style="resize: vertical;" [(ngModel)]="message"></textarea>
-                        </div>
-                        <div class="col-lg-4">
-                            <button type="submit" class="btn btn-success" >Send</button>
-                        </div>
-                   </div>
-                   <div style="max-height: 200px; overflow-y: scroll;">
-                        <div class="clearfix" *ngFor="#msg of messages">
-                            <p class="msg" [ngClass]="{'pull-left msg-other': !msg.my, 'pull-right msg-my':msg.my}">{{msg.message}}</p>
-                        </div>
-                   </div>
-              </form>
+                <div [hidden]="!connected">
+                  <form (submit)="send()">
+                       <div class="form-group">
+                            <div>
+                              <textarea id="send" [(ngModel)]="message" (keydown)="onKeyDown($event)"></textarea>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-success" >Send</button>
+                            </div>
+                       </div>
+                       <div #messagesDiv [ngStyle]="{maxHeight: messagesHeight + 'px'}" style="overflow-y: scroll;" (window:resize)="onWindowResize($event)">
+                            <div class="clearfix" *ngFor="#msg of messages">
+                                <p class="msg" [ngClass]="{'pull-left msg-other': !msg.my, 'pull-right msg-my':msg.my}">{{msg.message}}</p>
+                            </div>
+                       </div>
+                  </form>
+                </div>
             </div>
         </div>
     `
 })
 
-export default class Communcation implements OnInit {
+export default class Communcation implements OnInit, OnDestroy {
     ip:string;
     error:boolean;
     listening:string;
     action:string;
-    connected: string;
-    messages: any[];
+    connected:string;
+    messages:any[];
     message:string;
+    remote:string;
+    cipher;
+    messagesHeight:number;
+    @ViewChild('messagesDiv') private messagesDiv: ElementRef;
 
     constructor(private _zone:NgZone) {
 
@@ -84,16 +99,37 @@ export default class Communcation implements OnInit {
         this.action = 'Start listening';
 
         this.messages = [];
-        ipcRenderer.on('data', (event, data) => this._zone.run(() => this.messages.push({ my: false, message: data.toString() })));
-        ipcRenderer.on('connected', (event, remoteIp) => this._zone.run(() => { console.log(remoteIp); this.connected = remoteIp; }));
+        ipcRenderer.on('data', (event, data) => this._zone.run(() => {
+            this.messages.push({
+                my: false,
+                message: this.cipher.decrypt(data)
+            });
+            this.scrollToBottom();
+        }));
+        ipcRenderer.on('connected', (event, seed, remoteIp) => this._zone.run(() => {
+            this.connected = remoteIp;
+            this.cipher = new Cipher(72, null, seed.toString('hex').match(/[a-f0-9]{8}/g).map(n => parseInt(n, 16)));
+        }));
+        ipcRenderer.on('disconnected', () => this._zone.run(() => {
+            this.action = 'Start listening';
+            this.listening = null;
+            this.connected = null;
+        }));
+
+        ipcRenderer.on('error', (e, err) => {
+            console.log(err);
+        })
+
+        this.messagesHeight = 300;
+        jQuery('#send').textareaAutoSize();
+
     }
 
     listen() {
         if (!this.listening) {
             ipcRenderer.send('listen', this.ip);
-            ipcRenderer.once('listen', (event, err, address) => this._zone.run(() => {
+            ipcRenderer.on('listen', (event, err, address) => this._zone.run(() => {
                     if (err) {
-                        console.log(err)
                         this.listening = null;
                         return this.error = err
                     }
@@ -105,7 +141,7 @@ export default class Communcation implements OnInit {
             );
         } else {
             ipcRenderer.send('stop-listening');
-            ipcRenderer.once('stop-listening', (event, err) => this._zone.run(() => {
+            ipcRenderer.on('stop-listening', (event, err) => this._zone.run(() => {
                     if (err) {
                         return this.error = err;
                     }
@@ -118,7 +154,40 @@ export default class Communcation implements OnInit {
     }
 
     send() {
-        this.messages.push({ my: true, message: this.message });
-        this.message = "";
+        if (!this.message.length) return;
+        ipcRenderer.send('send', new Buffer(this.cipher.encrypt(new Buffer(this.message))));
+        ipcRenderer.once('recived', () => this._zone.run(() => {
+            this.messages.push({my: true, message: this.message});
+            this.message = "";
+            this.scrollToBottom();
+        }));
     }
+
+    connect() {
+        ipcRenderer.send('connect', this.remote)
+    }
+
+    disconnect() {
+        ipcRenderer.send('disconnect');
+    }
+
+    ngOnDestroy() {
+        this.disconnect();
+    }
+
+    onWindowResize(event) {
+        this.messagesHeight = event.target.innerHeight - 300;
+    }
+
+    scrollToBottom(): void {
+            this._zone.run(() => this.messagesDiv.nativeElement.scrollTop = this.messagesDiv.nativeElement.scrollHeight);
+    }
+
+    onKeyDown(e) {
+        if (e.keyCode === 13 && e.ctrlKey) {
+            this.send();
+            e.preventDefault();
+        }
+    }
+
 }

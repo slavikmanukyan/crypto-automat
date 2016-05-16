@@ -93,9 +93,11 @@ export class Cipher {
     public keyGen:KeyGenerator;
     protected atm:Automat;
 
-    constructor(states:number, keys?) {
+    constructor(states:number, keys?, seed?) {
         this.keyGen = new KeyGenerator();
-        if (keys) {
+        if (seed) {
+            this.keyGen.generateKeys(states, seed);
+        } else if (keys) {
             this.keyGen.setKeys(keys);
         } else {
             this.keyGen.generateKeys(states);

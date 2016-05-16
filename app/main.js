@@ -1,6 +1,7 @@
 var app = require('app');
 const os = require('os');
 const server = require('./tcp-server');
+const client = require('./tcp-client');
 
 // browser-window creates a native window
 var BrowserWindow = require('browser-window');
@@ -77,7 +78,6 @@ app.on('ready', function () {
                 }
             }
         }
-        console.log(addresses);
 
         mainWindow.send('get-ip',addresses[0]);
     });
@@ -89,9 +89,27 @@ app.on('ready', function () {
     });
 
     ipcMain.on('stop-listening', () => {
-        server.stop()
-            .then(() => mainWindow.send('stop-listening', null))
-            .catch((err) => mainWindow.send('stop-listening', err));
+        try {
+            server.stop();
+            mainWindow.send('stop-listening', null)
+        } catch (err) {
+            mainWindow.send('stop-listening', err)
+        }
+    })
+
+    ipcMain.on('connect', (e, ip) => {
+        client.connect(ip, mainWindow);
+    });
+
+    ipcMain.on('disconnect', () => {
+        client.disconnect();
+        server.stop();
+
+    });
+
+    ipcMain.on('send', (e, data) => {
+        client.send(data);
+        server.send(data);
     })
 
     ipcMain.on('show-keys', (e, keys) => {
@@ -111,3 +129,5 @@ app.on('before-quit', () => {
         keyWindow.close();
     }
 });
+
+process.on('uncaughtException', (err) => mainWindow.send('error', err));

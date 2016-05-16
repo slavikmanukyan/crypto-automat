@@ -1,4 +1,6 @@
 const net = require('net');
+const crypto = require('crypto');
+
 let server;
 let connected = 0;
 const sockets = [];
@@ -9,21 +11,33 @@ function handleConn(sock) {
         return sock.destroy();
     }
     sockets.push(sock);
-    connected++;
-    mainWindow.send('connected', sock.remoteAddress);
-    sock.on('data', (data) => mainWindow.send('data', data));
-    sock.on('close', () => {
-        connected = 0;
-        mainWindow.send('disconnected');
-    })
+
+    sock.once('data', (keyData) => {
+
+        const pubKey = keyData.slice(0, 64);
+        const prime = keyData.slice(64, 128);
+        const gener = keyData.slice(128, 129);
+
+        const dh = crypto.createDiffieHellman(prime, gener);
+        const myPubKey = dh.generateKeys();
+        const privKey = dh.computeSecret(pubKey);
+        sock.write(myPubKey);
+        mainWindow.send('connected', privKey, sock.remoteAddress);
+        connected++;
+        sock.on('data', (data) => mainWindow.send('data', data));
+        sock.on('close', () => {
+            connected = 0;
+            exports.stop();
+        });
+        sock.on('error', (err) => mainWindow.send(err));
+    });
 }
 
-exports.listen = function(port, ip, window) {
+exports.listen = function (port, ip, window) {
     server = net.createServer();
     return new Promise((resolve, reject) => {
-        server.listen(port, function(err) {
+        server.listen(port, function (err) {
             if (err) {
-                console.log(err)
                 return reject(err);
             }
 
@@ -35,16 +49,17 @@ exports.listen = function(port, ip, window) {
 };
 
 exports.stop = function () {
-  return new Promise((resolve, reject) => {
-          if (sockets[0]) {
-              sockets[0].end();
-          }
-          server.close((err) => {
-
-              if (err) {
-                  return reject(err);
-              }
-              return resolve();
-          })
-  });
+        if (!server) return;
+        if (sockets[0]) {
+            sockets[0].destroy();
+        }
+        sockets.splice(0, 1);
+        mainWindow.send('disconnected');
+        return server.close();
 };
+
+exports.send = function (data) {
+    if (!server || !sockets[0]) return;
+    sockets[0].write(data);
+    mainWindow.send('recived');
+}
