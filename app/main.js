@@ -1,5 +1,6 @@
 var app = require('app');
 const os = require('os');
+const server = require('./tcp-server');
 
 // browser-window creates a native window
 var BrowserWindow = require('browser-window');
@@ -76,8 +77,22 @@ app.on('ready', function () {
                 }
             }
         }
+        console.log(addresses);
+
         mainWindow.send('get-ip',addresses[0]);
     });
+
+    ipcMain.on('listen', () => {
+       server.listen(2448, null, mainWindow)
+            .then((ip) => mainWindow.send('listen',null, ip))
+            .catch((err) => mainWindow.send('listen', err ));
+    });
+
+    ipcMain.on('stop-listening', () => {
+        server.stop()
+            .then(() => mainWindow.send('stop-listening', null))
+            .catch((err) => mainWindow.send('stop-listening', err));
+    })
 
     ipcMain.on('show-keys', (e, keys) => {
         keyWindow.webContents.send('show-keys', {
