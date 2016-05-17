@@ -95,7 +95,7 @@ app.on('ready', function () {
         } catch (err) {
             mainWindow.send('stop-listening', err)
         }
-    })
+    });
 
     ipcMain.on('connect', (e, ip) => {
         client.connect(ip, mainWindow);
@@ -110,7 +110,7 @@ app.on('ready', function () {
     ipcMain.on('send', (e, data) => {
         client.send(data);
         server.send(data);
-    })
+    });
 
     ipcMain.on('show-keys', (e, keys) => {
         keyWindow.webContents.send('show-keys', {
@@ -118,7 +118,6 @@ app.on('ready', function () {
             states: template(keys.states)
         });
         keyWindow.show();
-
     })
 
 });

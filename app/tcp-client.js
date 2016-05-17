@@ -21,16 +21,17 @@ exports.connect = function(ip, window) {
         });
     });
 
-}
+};
 
 exports.send = function(data) {
     if (!mainWindow || !client) return;
     client.write(data);
     mainWindow.send('recived');
-}
+};
 
 exports.disconnect = function() {
     if (!client || !mainWindow) return;
     client.destroy();
+    client = null;
     mainWindow.send('disconnected');
-}
+};

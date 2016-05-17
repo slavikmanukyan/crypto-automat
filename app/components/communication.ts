@@ -12,8 +12,8 @@ declare var jQuery;
         `
             #send {
                 resize: vertical;
-                min-height: 100px;
-                max-height: 150px;
+                min-height: 80px;
+                max-height: 120px;
                 width: 50%
             }
             .msg {
@@ -54,6 +54,9 @@ declare var jQuery;
                     </div>
                     <button type="submit" class="btn btn-primary">Connect</button>
                 </form>
+                <div [hidden]="!connected" class="clearfix">
+                    <btn class="btn btn-primary pull-right" (click)="seeKeys()">See keys</btn>
+                </div>
                 <div [hidden]="!connected">
                   <form (submit)="send()">
                        <div class="form-group">
@@ -64,9 +67,9 @@ declare var jQuery;
                                 <button type="submit" class="btn btn-success" >Send</button>
                             </div>
                        </div>
-                       <div #messagesDiv [ngStyle]="{maxHeight: messagesHeight + 'px'}" style="overflow-y: scroll;" (window:resize)="onWindowResize($event)">
+                       <div #messagesDiv [ngStyle]="{maxHeight: messagesHeight + 'px'}" style="overflow-y: auto;" (window:resize)="onWindowResize($event)">
                             <div class="clearfix" *ngFor="#msg of messages">
-                                <p class="msg" [ngClass]="{'pull-left msg-other': !msg.my, 'pull-right msg-my':msg.my}">{{msg.message}}</p>
+                                <p class="msg text-left" [ngClass]="{'pull-left msg-other': !msg.my, 'pull-right msg-my':msg.my}" style="max-width: 90%; word-wrap: break-word">{{msg.message}}</p>
                             </div>
                        </div>
                   </form>
@@ -95,7 +98,7 @@ export default class Communcation implements OnInit, OnDestroy {
 
     ngOnInit() {
         ipcRenderer.send('get-ip');
-        ipcRenderer.on('get-ip', (event, ip) => this.ip = ip);
+        ipcRenderer.on('get-ip', (event, ip) => this._zone.run(() => this.ip = ip));
         this.action = 'Start listening';
 
         this.messages = [];
@@ -114,13 +117,14 @@ export default class Communcation implements OnInit, OnDestroy {
             this.action = 'Start listening';
             this.listening = null;
             this.connected = null;
+            this.messages.splice(0, this.messages.length);
         }));
 
         ipcRenderer.on('error', (e, err) => {
             console.log(err);
-        })
+        });
 
-        this.messagesHeight = 300;
+        this.messagesHeight = 250;
         jQuery('#send').textareaAutoSize();
 
     }
@@ -175,12 +179,25 @@ export default class Communcation implements OnInit, OnDestroy {
         this.disconnect();
     }
 
+    seeKeys() {
+        ipcRenderer.send('show-keys', {
+            symbols: {
+                stateCount: this.cipher.keyGen.stateCount,
+                table: this.cipher.keyGen.symbols.getTable()
+            },
+            states: {
+                stateCount: this.cipher.keyGen.stateCount,
+                table: this.cipher.keyGen.states.getTable()
+            }
+        });
+    }
+
     onWindowResize(event) {
-        this.messagesHeight = event.target.innerHeight - 300;
+        this.messagesHeight = event.target.innerHeight - 350;
     }
 
     scrollToBottom(): void {
-            this._zone.run(() => this.messagesDiv.nativeElement.scrollTop = this.messagesDiv.nativeElement.scrollHeight);
+            setTimeout(() => this.messagesDiv.nativeElement.scrollTop = this.messagesDiv.nativeElement.scrollHeight + 100, 0);
     }
 
     onKeyDown(e) {

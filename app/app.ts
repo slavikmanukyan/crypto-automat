@@ -18,12 +18,12 @@ import Communcation from "./components/communication";
     template: `
     <div class="window">
       <app-header></app-header>
-      <div class="window-content">
+      <div class="window-content" style="overflow-y: none;">
         <div class="pane-group">
           <div class="pane-md sidebar">
                <nav-bar></nav-bar>
           </div>
-             <main-area style="width: 100%;"></main-area>
+             <main-area style="width: 100%; overflow-y: auto;"></main-area>
         </div>
       </div>
     </div>

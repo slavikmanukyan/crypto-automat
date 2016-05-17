@@ -14,6 +14,6 @@ table(class='table-striped')
              th= row[0]
              each sym in row[1]
                td= sym
-`
+`;
 
 module.exports =  pug.compile(template);

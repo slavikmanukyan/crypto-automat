@@ -116,8 +116,7 @@ declare var jQuery;
             </div>
          </div>
         </div>
-    `,
-    directives: [[Loading]]
+    `
 })
 
 export default class Crypter implements OnInit{
@@ -301,7 +300,7 @@ export default class Crypter implements OnInit{
                             symbols,
                             states,
                             stateCount: Config.statesCount
-                        }
+                        };
                         this._zone.run(() => {
                             if (!this.cp) {
                                 this.cp = new Cipher(Config.statesCount, keys);

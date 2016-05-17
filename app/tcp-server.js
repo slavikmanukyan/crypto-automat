@@ -55,11 +55,11 @@ exports.stop = function () {
         }
         sockets.splice(0, 1);
         mainWindow.send('disconnected');
-        return server.close();
+        return server.close(() => { server = null;});
 };
 
 exports.send = function (data) {
     if (!server || !sockets[0]) return;
     sockets[0].write(data);
     mainWindow.send('recived');
-}
+};
