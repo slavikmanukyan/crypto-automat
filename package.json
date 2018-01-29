@@ -5,13 +5,16 @@
   "scripts": {
     "build": "webpack --progress --profile --colors --display-error-details --display-cached",
     "watch": "webpack --watch --progress --profile --colors --display-error-details --display-cached",
-    "electron": "electron ."
+    "electron": "electron .",
+    "postinstall": "typings install"
   },
   "devDependencies": {
+    "@types/node": "^9.4.0",
     "electron-prebuilt": "0.37.7",
     "es6-shim": "^0.35.0",
-    "ts-loader": "^0.7.2",
-    "typescript": "^1.7.3",
+    "ts-loader": "^3.3.1",
+    "typescript": "^2.6.2",
+    "typings": "^2.1.1",
     "webpack": "^1.12.9",
     "webpack-dev-server": "^1.14.0"
   },
